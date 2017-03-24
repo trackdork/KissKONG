@@ -16,7 +16,20 @@
 #include "KissAndMsp.h"
 #include "MAX7456.h"
 
-MAX7456 osd(10);// MAX7456 attached to SPI and SS pin 10
+// uncomment this for specific OSD board here
+// https://droneplastics.com/reaktor-pdbosd
+//#define REAKTOR_PDB_OSD
+
+// uncomment this to turn on the crosshair
+//#define USE_CROSSHAIR
+
+#ifdef REAKTOR_PDB_OSD
+  #define SPI_PIN 5
+#else
+  #define SPI_PIN 10
+#endif
+
+MAX7456 osd(SPI_PIN);// MAX7456 attached to SPI and SS pin 10
 
 /*
  * MSP implementation for Font Upload
@@ -63,6 +76,8 @@ void msp_delay(uint32_t ms){
 #define TB_AD   "\x0f"
 #define TB_AL   "\x89"
 #define TB_AR   "\x88"
+
+#define CROSSHAIR "\xd0" "\xd1"
 
 #define ARROW_LEFT   0x89
 #define ARROW_RIGHT  0x88
@@ -1148,7 +1163,9 @@ void loop(){
             osd.setOffsetLeft(offsetLeft);
             osd.setOffsetTop(offsetTop);
             if(telemetry.armed || !hasArmSwitch()){
-                loopArmed();
+                loopArmed();     
+                // draw crosshair if configured
+                drawCrosshair();
             } else {
                 loopDisarmed();
             }
@@ -1197,6 +1214,15 @@ void setup(){
     //we are now connected to KISS FC
     osd.clearDisplay();
     osd.display();
+}
+
+
+static void drawCrosshair() {
+
+#ifdef USE_CROSSHAIR
+  osd.setCursor((osd.width()/2)-2, (osd.height()/2)-1);
+  osd.println(F(CROSSHAIR));
+#endif
 }
 /*
 void onDbg(uint8_t cmd, uint8_t * data, uint8_t len){
