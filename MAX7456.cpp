@@ -157,6 +157,12 @@ void MAX7456::begin(video_mode_t vmode){
     csport    = portOutputRegister(digitalPinToPort(_ss));
     cspinmask = digitalPinToBitMask(_ss);
     pinMode(_ss, OUTPUT);
+ #ifdef REAKTOR_PDB_OSD
+    // this must be done to take the MAX chip 
+    // out of reset on this specific board
+    pinMode(10, OUTPUT);
+    digitalWrite(10, HIGH);
+  #endif
     _MAX7456_deselect();
     _spi_begin();
     reset();
