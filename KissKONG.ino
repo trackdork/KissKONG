@@ -24,7 +24,11 @@
 //#define USE_CROSSHAIR
 
 #ifdef REAKTOR_PDB_OSD
+  // MAX7456 chip is connected on pin D6 (pin 5)
   #define SPI_PIN 5
+  // RESET must be pulled high (pin 10)
+  pinMode(10, OUTPUT);
+  digitalWrite(10, HIGH);
 #else
   #define SPI_PIN 10
 #endif
@@ -1066,6 +1070,11 @@ void drawLiveStats(){
             }
         }
     }
+  
+    if (telemetry.armed) {     
+        // draw crosshair if armed and so configured
+        drawCrosshair();
+    }
 
     voltageAlarm(voltage);
 }
@@ -1163,9 +1172,7 @@ void loop(){
             osd.setOffsetLeft(offsetLeft);
             osd.setOffsetTop(offsetTop);
             if(telemetry.armed || !hasArmSwitch()){
-                loopArmed();     
-                // draw crosshair if configured
-                drawCrosshair();
+                loopArmed();
             } else {
                 loopDisarmed();
             }
